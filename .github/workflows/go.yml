@@ -3,10 +3,10 @@ name: CI/CD Pipeline  # 定义CI/CD流水线的名称
 on:
   push:
     branches:
-      - abcd  # 当推送到main分支时触发该工作流
+      - abcd  # 当推送到dev分支时触发该工作流
   pull_request:
     branches:
-      - abcd  # 当针对main分支的PR创建或更新时触发该工作流
+      - abcd  # 当针对dev分支的PR创建或更新时触发该工作流
 
 jobs:
   build-go:
