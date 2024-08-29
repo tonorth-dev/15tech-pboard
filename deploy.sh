@@ -1,7 +1,7 @@
 #!/bin/bash
 git pull
 # 查找并终止与`go run .`相关的进程，如果没有找到则输出提示
-pkill -f 'go run .' || echo 'No Go service running'
+fuser -k 8888/tcp
 # 进入server目录
 cd server
 # 执行go generate以安装依赖
@@ -12,7 +12,7 @@ go build -v .
 nohup go run . &
 
 # 查找并终止与`npm run serve`相关的进程，如果没有找到则输出提示
-pkill -f 'npm run serve' || echo 'No Node.js service running'
+fuser -k 8081/tcp
 # 进入web目录
 cd ../web
 # 安装npm依赖
