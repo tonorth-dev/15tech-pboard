@@ -11,6 +11,7 @@ go build -v .
 # 使用nohup后台运行服务，避免阻塞
 nohup go run . &
 
+
 # 查找并终止与`npm run serve`相关的进程，如果没有找到则输出提示
 fuser -k 8081/tcp
 # 进入web目录
