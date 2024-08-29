@@ -1,0 +1,70 @@
+name: CI/CD Pipeline  # 定义CI/CD流水线的名称
+
+on:
+  push:
+    branches:
+      - dev  # 当推送到main分支时触发该工作流
+  pull_request:
+    branches:
+      - dev  # 当针对main分支的PR创建或更新时触发该工作流
+
+jobs:
+  build-go:
+    name: Build and Run Go Service  # 定义构建和运行Go服务的Job
+    runs-on: ubuntu-latest  # 在最新的Ubuntu环境中运行
+
+    steps:
+    - name: Checkout code  # 第一步，检出代码
+      uses: actions/checkout@v3  # 使用GitHub官方的checkout动作
+
+    - name: Set up Go  # 设置Go环境
+      uses: actions/setup-go@v4  # 使用官方的Go设置动作
+      with:
+        go-version: 1.23  # 指定要使用的Go版本，可以根据实际情况修改
+
+    - name: Kill existing Go service  # 检查并终止已经运行的Go服务
+      run: |
+        pkill -f 'go run .' || echo 'No Go service running'  # 查找并终止与`go run .`相关的进程，如果没有找到则输出提示
+
+    - name: Install dependencies  # 安装Go依赖
+      run: |
+        cd server  # 进入server目录
+        go generate  # 执行go generate以安装依赖
+
+    - name: Build Go project  # 构建Go项目
+      run: |
+        cd server  # 进入server目录
+        go build -v .  # 构建项目，使用-v选项输出详细信息
+
+    - name: Run Go service  # 运行Go服务
+      run: |
+        cd server  # 进入server目录
+        nohup go run . &  # 使用nohup后台运行服务，避免阻塞
+
+  build-node:
+    name: Build and Run Node.js Service  # 定义构建和运行Node.js服务的Job
+    runs-on: ubuntu-latest  # 在最新的Ubuntu环境中运行
+    needs: build-go  # 此Job依赖于build-go Job完成后才能运行
+
+    steps:
+    - name: Checkout code  # 第一步，检出代码
+      uses: actions/checkout@v3  # 使用GitHub官方的checkout动作
+
+    - name: Set up Node.js  # 设置Node.js环境
+      uses: actions/setup-node@v3  # 使用官方的Node.js设置动作
+      with:
+        node-version: 20  # 指定要使用的Node.js版本，可以根据实际情况修改
+
+    - name: Kill existing Node.js service  # 检查并终止已经运行的Node.js服务
+      run: |
+        pkill -f 'npm run serve' || echo 'No Node.js service running'  # 查找并终止与`npm run serve`相关的进程，如果没有找到则输出提示
+
+    - name: Install dependencies  # 安装Node.js依赖
+      run: |
+        cd web  # 进入web目录
+        npm install  # 安装npm依赖
+
+    - name: Build and Serve Node.js project  # 构建并启动Node.js项目
+      run: |
+        cd web  # 进入web目录
+        nohup npm run serve &  # 使用nohup后台运行服务，避免阻塞
